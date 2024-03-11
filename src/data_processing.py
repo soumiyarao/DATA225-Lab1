@@ -76,18 +76,24 @@ def prepare_parent_and_connecting_data(df, column_name):
             # print("An error occurred:", e)
             pass
        
+        primary_key = 1
         # Iterate over each JSON object in the array
-        for json_obj in json_array:
+        for json_entry in json_array:
             try:
+                connecting_table_data[column1].append(row[corr_column1])
                 # Check if the specified key exists in the JSON object
-                if corr_column2 in json_obj:
-                # If the key exists, append its value to the list
-                    connecting_table_data[column1].append(row[corr_column1])
-                    connecting_table_data[column2].append(json_obj[corr_column2])
+                if corr_column2 in json_entry:
+                    # If the key exists, append its value to the list
+                    connecting_table_data[column2].append(json_entry[corr_column2])
+                else:
+                    # If the key does not exists, append a default primary key to the list
+                    connecting_table_data[column2].append(primary_key)
+                    primary_key += 1
+                    
             except Exception as e:
                 print("Error adding entries in connecting_table_data", e)
                 
-            for key, value in json_obj.items():
+            for key, value in json_entry.items():
                 # If the key already exists in the dictionary and the value is not already present in the list,
                 # append the value to its corresponding list
                 if key in parent_table_data:
@@ -95,7 +101,14 @@ def prepare_parent_and_connecting_data(df, column_name):
                 # If the key does not exist in the dictionary, create a new list for the key and append the value
                 else:
                     parent_table_data[key] = [value]
+        
+    if constants.HEADER_ID not in parent_table_data:
+        # If primary key does not exist in parent_table_data add the primary key and its values
+        length_of_parent_table = len(parent_table_data[next(iter(parent_table_data))])
+        parent_table_data[constants.HEADER_ID] = [primary_key_value for primary_key_value in range(1, length_of_parent_table+1)]
 
+    #print(f'parent_table_data: \n {parent_table_data}')
+    #print(f'\nconnecting_table_data: \n {connecting_table_data}')
     return parent_table_data, connecting_table_data
     
 def prepare_movie_metadata_parent_table(df, host, user, password, database):

@@ -19,8 +19,6 @@ def main():
     db_manager.create_database(host, user,password, constants.DATABASE_NAME)
     
     data_processing.prepare_movie_metadata_parent_table(df_movie_metadata, host, user, password, constants.DATABASE_NAME)
-    #data_processing.prepare_parent_and_connecting_tables(df_movie_metadata, constants.HEADER_GENRES, host, user, password, constants.DATABASE_NAME)
-    #data_processing.prepare_parent_and_connecting_tables(df_movie_metadata, constants.HEADE_PRODUCTION_COMPANIES, host, user, password, constants.DATABASE_NAME)
     for header in constants.primary_table_headers:
         data_processing.prepare_parent_and_connecting_tables(df_movie_metadata, header, host, user, password, constants.DATABASE_NAME)
     
