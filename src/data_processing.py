@@ -2,6 +2,8 @@ import pandas as pd
 import constants
 import db_manager
 import ast
+import numpy as np
+    
 
 def get_dataset(file_name, nrows=None, low_memory=False):
     file = f'{constants.DATA_SET_PATH}/{file_name}.{constants.DATA_SET_EXTENSION}'
@@ -29,6 +31,12 @@ def remove_nullrows(df, headers=None):
     for header in headers:
         df_processed = df.dropna(subset=[header])
     return df_processed
+
+def replace_non_integer(value):
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return np.nan
 
 def clean_df(df, headers=None):
     df_processed = None
@@ -79,6 +87,10 @@ def prepare_parent_and_connecting_data(df, column_name):
         primary_key = 1
         # Iterate over each JSON object in the array
         for json_entry in json_array:
+            values = [str(value) for value in json_entry.values()]
+            concatenated_string = ''.join(values)
+            primary_key = hash(concatenated_string)
+            
             try:
                 connecting_table_data[column1].append(row[corr_column1])
                 # Check if the specified key exists in the JSON object
@@ -87,20 +99,29 @@ def prepare_parent_and_connecting_data(df, column_name):
                     connecting_table_data[column2].append(json_entry[corr_column2])
                 else:
                     # If the key does not exists, append a default primary key to the list
+                    # Concatenate values into a single string
                     connecting_table_data[column2].append(primary_key)
-                    primary_key += 1
                     
             except Exception as e:
                 print("Error adding entries in connecting_table_data", e)
-                
+             
+            if constants.HEADER_ID not in json_entry.keys():
+                if constants.HEADER_ID in parent_table_data:
+                    parent_table_data[constants.HEADER_ID].append(primary_key)
+                # If the key does not exist in the dictionary, create a new list for the key and append the value
+                else:    
+                    parent_table_data[constants.HEADER_ID] = [primary_key]
+
+            #parent_table_data[constants.HEADER_ID] = primary_key
             for key, value in json_entry.items():
                 # If the key already exists in the dictionary and the value is not already present in the list,
                 # append the value to its corresponding list
                 if key in parent_table_data:
                     parent_table_data[key].append(value)
                 # If the key does not exist in the dictionary, create a new list for the key and append the value
-                else:
+                else:    
                     parent_table_data[key] = [value]
+                    
         
     if constants.HEADER_ID not in parent_table_data:
         # If primary key does not exist in parent_table_data add the primary key and its values
@@ -113,43 +134,59 @@ def prepare_parent_and_connecting_data(df, column_name):
     
 def prepare_movie_metadata_parent_table(df, host, user, password, database):
     table_name = constants.MOVIES_METADATA_TABLE
-    headers = constants.movies_meta_data_headers
-         
+    headers = ['id','title','adult','budget', 'homepage', 'imdb_id', 'original_language', 'original_title', 'overview', 'popularity', 'poster_path', 'release_date', 'revenue', 'runtime', 'status', 'tagline', 'video', 'vote_average', 'vote_count']
+    
     create_table_query = f"""
         CREATE TABLE movie_metadata (
-        {constants.HEADER_TMDB_ID} INT PRIMARY KEY,
-        title VARCHAR(255)
+        {constants.HEADER_TMDB_ID} VARCHAR(255) PRIMARY KEY,
+        title VARCHAR(255),
+        adult boolean,
+        budget bigint,
+        homepage varchar(255),
+        imdb_id varchar(255),
+        original_language varchar(255),
+        original_title varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+        overview varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+        popularity float,
+        poster_path varchar(255),
+        release_date varchar(255),
+        revenue bigint,
+        runtime int,
+        status varchar(255),
+        tagline varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+        video boolean,
+        vote_average float,
+        vote_count int   
     )
     """
     
     insert_table_query = f"""
             INSERT INTO Movie_Metadata 
-            ({constants.HEADER_TMDB_ID}, title) 
-            VALUES (%s, %s)
+            ({constants.HEADER_TMDB_ID}, title, adult, budget, homepage, imdb_id, original_language, original_title, overview, popularity, poster_path, release_date, revenue, runtime, status, tagline, video, vote_average, vote_count) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
-    
+
     db_manager.create_insert_table(df, host, user, password, database, table_name, create_table_query, headers, insert_table_query)
     
-def prepare_parent_and_connecting_tables(df, column_name, host, user, password, database):
+def prepare_parent_and_connecting_tables(df, header, host, user, password, database):
+    column_name = header[0]
+    table_column_names_list = header[1]
+    data_types_list = header[2] 
+    header_list = header[3]
+    
     parent_table_data, connecting_table_data = prepare_parent_and_connecting_data(df, column_name)
+    
+    
     parent_table_data = pd.DataFrame(parent_table_data)
     parent_table_data = clean_df(parent_table_data, [constants.HEADER_ID])
     connecting_table_data = pd.DataFrame(connecting_table_data)
     
     parent_table_name = column_name
-    header_list = [constants.HEADER_ID,'name'] 
-    create_table_query = f"""
-        CREATE TABLE {parent_table_name} (
-        {parent_table_name}_id INT PRIMARY KEY,
-        name VARCHAR(255)
-    )
-    """
     
-    insert_table_query = f"""
-        INSERT INTO {parent_table_name} 
-        ({parent_table_name}_id, name) 
-        VALUES (%s, %s)
-    """
+    create_table_query = get_create_table_query(parent_table_name, table_column_names_list, data_types_list)
+    insert_table_query = get_insert_query(parent_table_name, table_column_names_list)
+    
+
     db_manager.create_insert_table(parent_table_data, host, user, password, database, parent_table_name, create_table_query, header_list, insert_table_query)
     
     connecting_table_name = f'movie_{column_name}'
@@ -157,8 +194,8 @@ def prepare_parent_and_connecting_tables(df, column_name, host, user, password, 
          
     create_table_query = f"""
         CREATE TABLE {connecting_table_name} (
-        {constants.HEADER_TMDB_ID} INT,
-        {column_name}_id INT,
+        {constants.HEADER_TMDB_ID} VARCHAR(255),
+        {column_name}_id VARCHAR(255),
         Foreign key({constants.HEADER_TMDB_ID}) references {constants.MOVIES_METADATA_TABLE}({constants.HEADER_TMDB_ID}),
         Foreign key({column_name}_id) references {parent_table_name}({column_name}_id),
         Primary Key({constants.HEADER_TMDB_ID}, {column_name}_id)
@@ -172,3 +209,29 @@ def prepare_parent_and_connecting_tables(df, column_name, host, user, password, 
     """
     
     db_manager.create_insert_table(connecting_table_data, host, user, password, database, connecting_table_name, create_table_query, header_list, insert_table_query)
+    
+    
+    
+def get_create_table_query(table_name, column_names, data_types):
+    create_table_query = f"CREATE TABLE {table_name} ("
+    for column_name, data_type in zip(column_names, data_types):
+
+        create_table_query += f"\n\t{column_name} {data_type},"
+    create_table_query = create_table_query.rstrip(',') + "\n);"
+
+    #print("SQL Table Creation Query:")
+    #print(create_table_query)
+    
+    return create_table_query
+    
+def get_insert_query(table_name, column_names):
+    insert_query = f"INSERT INTO {table_name} ({', '.join(column_names)}) VALUES ("
+    insert_query += ', '.join(['%s' for _ in range(len(column_names))])
+    insert_query += ");"
+
+    #print("INSERT Query:")
+    #print(insert_query)
+    
+    return insert_query
+        
+        

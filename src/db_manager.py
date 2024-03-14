@@ -42,7 +42,12 @@ def insert_data(cursor, df, headers, table_name, insert_table_query):
                 data.append(int(row[header]))
             else:
                 data.append(row[header])
-        cursor.execute(insert_table_query,  data)
+        try:
+            cursor.execute(insert_table_query,  data)
+        except Exception as e:
+            print("Exception:", e)
+            print(f"Unable to insert :\n")
+            quit()
     
     print(f"Dataframe inserted into primary table - {table_name}.")
       
