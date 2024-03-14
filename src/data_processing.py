@@ -138,7 +138,7 @@ def prepare_movie_metadata_parent_table(df, host, user, password, database):
     
     create_table_query = f"""
         CREATE TABLE movie_metadata (
-        {constants.HEADER_TMDB_ID} VARCHAR(255) PRIMARY KEY,
+        {constants.HEADER_TMDB_ID} int PRIMARY KEY,
         title VARCHAR(255),
         adult boolean,
         budget bigint,
@@ -167,7 +167,50 @@ def prepare_movie_metadata_parent_table(df, host, user, password, database):
         """
 
     db_manager.create_insert_table(df, host, user, password, database, table_name, create_table_query, headers, insert_table_query)
+
+def prepare_links_table(df, host, user, password, database):
+    table_name = constants.LINKS_TABLE
+    headers = ['movieId','imdbId','tmdbId']
     
+    create_table_query = f"""
+        CREATE TABLE {table_name} (
+        movie_id int PRIMARY KEY,
+        imdb_id int,
+        tmdb_id int
+    )
+    """
+    
+    insert_table_query = f"""
+            INSERT INTO {table_name} 
+            (movie_id, imdb_id, tmdb_id) 
+            VALUES (%s, %s, %s)
+        """
+
+    db_manager.create_insert_table(df, host, user, password, database, table_name, create_table_query, headers, insert_table_query)
+
+def prepare_ratings_table(df, host, user, password, database):
+    table_name = constants.RATINGS_TABLE
+    headers = ['userId','movieId','rating','timestamp']
+    
+    create_table_query = f"""
+        CREATE TABLE {table_name} (
+        user_id int,
+        movie_id int,
+        rating float,
+        timestamp TIMESTAMP,
+        PRIMARY KEY(user_id,movie_id)
+    )
+    """
+    
+    insert_table_query = f"""
+            INSERT INTO {table_name} 
+            (user_id, movie_id, rating, timestamp) 
+            VALUES (%s, %s, %s, FROM_UNIXTIME(%s))
+        """
+
+    db_manager.create_insert_table(df, host, user, password, database, table_name, create_table_query, headers, insert_table_query)
+       
+              
 def prepare_parent_and_connecting_tables(df, header, host, user, password, database):
     column_name = header[0]
     table_column_names_list = header[1]
@@ -194,8 +237,8 @@ def prepare_parent_and_connecting_tables(df, header, host, user, password, datab
          
     create_table_query = f"""
         CREATE TABLE {connecting_table_name} (
-        {constants.HEADER_TMDB_ID} VARCHAR(255),
-        {column_name}_id VARCHAR(255),
+        {constants.HEADER_TMDB_ID} int,
+        {column_name}_id varchar(255),
         Foreign key({constants.HEADER_TMDB_ID}) references {constants.MOVIES_METADATA_TABLE}({constants.HEADER_TMDB_ID}),
         Foreign key({column_name}_id) references {parent_table_name}({column_name}_id),
         Primary Key({constants.HEADER_TMDB_ID}, {column_name}_id)
