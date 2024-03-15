@@ -8,6 +8,9 @@ def main():
     
     # Read Dataset
     df_movie_metadata = data_processing.get_dataset(file_name=constants.MOVIES_METADATA)#, nrows=30)
+    df_movie_metadata['adult'] = df_movie_metadata['adult'].map(data_processing.map_adult_value)
+    df_movie_metadata = df_movie_metadata.dropna(subset=['adult'])
+    df_movie_metadata['adult'] = df_movie_metadata['adult'].astype(int)
     df_movie_metadata['id'] = df_movie_metadata['id'].apply(data_processing.replace_non_integer)
     df_movie_metadata = data_processing.clean_df(df_movie_metadata, headers=constants.movies_meta_data_headers)
     df_movie_metadata['id'] = df_movie_metadata['id'].astype(int)

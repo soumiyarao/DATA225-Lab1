@@ -45,9 +45,7 @@ def insert_data(cursor, df, headers, table_name, insert_table_query):
         try:
             cursor.execute(insert_table_query,  data)
         except Exception as e:
-            print("Exception:", e)
-            
-           
+            print("Exception:", e)          
     
     print(f"Dataframe inserted into primary table - {table_name}.")
       
@@ -58,7 +56,7 @@ def create_database(host, user, password, database):
         if connection.is_connected():
             cursor = connection.cursor()
             
-            drop_db_query = f"DROP DATABASE {database}"
+            drop_db_query = f"DROP DATABASE IF EXISTS {database}"
             cursor.execute(drop_db_query)
             print(f"Dropped {database} created successfully.")
 

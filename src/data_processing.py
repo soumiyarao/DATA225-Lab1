@@ -22,6 +22,14 @@ def remove_duplicates(df, headers=None):
         df_processed = df.drop_duplicates(subset=[header])
     return df_processed
 
+def map_adult_value(value):
+    if value == 'TRUE' or value == True:
+        return 1
+    elif value == 'FALSE' or value == False:
+        return 0
+    else:
+        return np.nan 
+    
 def remove_nullrows(df, headers=None):
     df_processed = None
     if headers == None:
