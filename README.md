@@ -2,7 +2,7 @@
 
 Instructions to execute the code:
 - clone the repo and create developer branch (git checkout -b "branch-name")
-- Copy the dataset *.csv file tp DATA225-LAB1/res/ folder
+- Copy the dataset *.csv file to DATA225-LAB1/res/ folder
 - Launch MySQL
 - Run the main program:
 ```

@@ -29,7 +29,7 @@ keywords_table_headers = [HEADER_KEYWORDS]
 
 
 
-DATABASE_NAME = 'TMDB'
+DATABASE_NAME = 'tmdb'
 MOVIES_METADATA_TABLE = 'movie_metadata'
 LINKS_TABLE = 'links'
 RATINGS_TABLE = 'ratings'

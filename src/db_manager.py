@@ -45,7 +45,8 @@ def insert_data(cursor, df, headers, table_name, insert_table_query):
         try:
             cursor.execute(insert_table_query,  data)
         except Exception as e:
-            print("Exception:", e)          
+            pass
+            #print("Exception:", e)          
     
     print(f"Dataframe inserted into primary table - {table_name}.")
       

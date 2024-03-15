@@ -52,6 +52,57 @@ def clean_df(df, headers=None):
     df_processed = remove_nullrows(df_processed, headers)
     return df_processed
 
+
+def load_movies_metadata(host, user,password):
+    df_movie_metadata = get_dataset(file_name=constants.MOVIES_METADATA)#, nrows=30)
+    df_movie_metadata['adult'] = df_movie_metadata['adult'].map(map_adult_value)
+    df_movie_metadata = df_movie_metadata.dropna(subset=['adult'])
+    df_movie_metadata['adult'] = df_movie_metadata['adult'].astype(int)
+    df_movie_metadata['id'] = df_movie_metadata['id'].apply(replace_non_integer)
+    df_movie_metadata = clean_df(df_movie_metadata, headers=constants.movies_meta_data_headers)
+    df_movie_metadata['id'] = df_movie_metadata['id'].astype(int)
+    df_movie_metadata = df_movie_metadata.replace(np.nan, None)
+    
+    prepare_movie_metadata_parent_table(df_movie_metadata, host, user, password, constants.DATABASE_NAME)
+    for header in constants.primary_table_headers:
+        prepare_parent_and_connecting_tables(df_movie_metadata, header, host, user, password, constants.DATABASE_NAME)
+ 
+def load_keywords(host, user,password):
+    df_keywords = get_dataset(file_name=constants.KEYWORDS) #, nrows=30)
+    df_keywords = clean_df(df_keywords, ['id'])
+    
+    for header in constants.keywords_table_headers:
+        prepare_parent_and_connecting_tables(df_keywords, header, host, user, password, constants.DATABASE_NAME) 
+    
+    
+def load_links(host, user,password):   
+    df_links = get_dataset(file_name=constants.LINKS)#, nrows=30)
+    df_links = clean_df(df_links, ['movieId','tmdbId'])
+    df_links = df_links.replace(np.nan, None)
+    prepare_links_table(df_links, host, user, password, constants.DATABASE_NAME) 
+    
+def load_ratings(host, user,password):  
+    df_ratings = get_dataset(file_name=constants.RATINGS)#, nrows=30)
+    df_ratings = df_ratings.replace(np.nan, None)  
+    
+    prepare_ratings_table(df_ratings, host, user, password, constants.DATABASE_NAME) 
+    
+def load_credits(host, user,password):
+    df_credits = get_dataset(file_name=constants.CREDITS)#, nrows=1)
+    df_credits = clean_df(df_credits, ['id'])
+    df_credits = df_credits.replace(np.nan, None) 
+    
+    df_credits = df_credits.rename(columns={'cast': 'credit'})
+    prepare_parent_and_connecting_tables(df_credits, constants.HEADER_CAST, host, user, password, constants.DATABASE_NAME)
+    db_manager.rename_table(host, user, password,constants.DATABASE_NAME,'credit','casts')
+    db_manager.rename_table(host, user, password,constants.DATABASE_NAME,'movie_credit','movie_casts') 
+    df_credits = df_credits.rename(columns={'credit': 'cast'})
+    df_credits = df_credits.rename(columns={'crew': 'credit'})
+    prepare_parent_and_connecting_tables(df_credits, constants.HEADER_CREW, host, user, password, constants.DATABASE_NAME)
+    db_manager.rename_table(host, user, password,constants.DATABASE_NAME,'credit','crews')
+    db_manager.rename_table(host, user, password,constants.DATABASE_NAME,'movie_credit','movie_crews') 
+    
+    
 def prepare_parent_and_connecting_data(df, column_name, corr_column1, corr_column2):
     column1 = constants.HEADER_TMDB_ID
     column2 = f'{column_name}_id'
