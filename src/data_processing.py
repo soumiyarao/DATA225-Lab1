@@ -44,11 +44,11 @@ def clean_df(df, headers=None):
     df_processed = remove_nullrows(df_processed, headers)
     return df_processed
 
-def prepare_parent_and_connecting_data(df, column_name):
+def prepare_parent_and_connecting_data(df, column_name, corr_column1, corr_column2):
     column1 = constants.HEADER_TMDB_ID
     column2 = f'{column_name}_id'
-    corr_column1 = constants.HEADER_ID
-    corr_column2 = constants.HEADER_ID
+    #corr_column1 = constants.HEADER_ID
+    #corr_column2 = constants.HEADER_ID
      
     # Initialize a dictionary to store unique values for each key
     connecting_table_data = {}
@@ -87,30 +87,30 @@ def prepare_parent_and_connecting_data(df, column_name):
         primary_key = 1
         # Iterate over each JSON object in the array
         for json_entry in json_array:
-            values = [str(value) for value in json_entry.values()]
+            """ values = [str(value) for value in json_entry.values()]
             concatenated_string = ''.join(values)
-            primary_key = hash(concatenated_string)
+            primary_key = hash(concatenated_string) """
             
             try:
                 connecting_table_data[column1].append(row[corr_column1])
                 # Check if the specified key exists in the JSON object
-                if corr_column2 in json_entry:
+                #if corr_column2 in json_entry:
                     # If the key exists, append its value to the list
-                    connecting_table_data[column2].append(json_entry[corr_column2])
-                else:
+                connecting_table_data[column2].append(json_entry[corr_column2])
+               # else:
                     # If the key does not exists, append a default primary key to the list
                     # Concatenate values into a single string
-                    connecting_table_data[column2].append(primary_key)
+                    #connecting_table_data[column2].append(primary_key)
                     
             except Exception as e:
                 print("Error adding entries in connecting_table_data", e)
              
-            if constants.HEADER_ID not in json_entry.keys():
+            """ if constants.HEADER_ID not in json_entry.keys():
                 if constants.HEADER_ID in parent_table_data:
                     parent_table_data[constants.HEADER_ID].append(primary_key)
                 # If the key does not exist in the dictionary, create a new list for the key and append the value
                 else:    
-                    parent_table_data[constants.HEADER_ID] = [primary_key]
+                    parent_table_data[constants.HEADER_ID] = [primary_key] """
 
             #parent_table_data[constants.HEADER_ID] = primary_key
             for key, value in json_entry.items():
@@ -123,10 +123,10 @@ def prepare_parent_and_connecting_data(df, column_name):
                     parent_table_data[key] = [value]
                     
         
-    if constants.HEADER_ID not in parent_table_data:
+    """ if constants.HEADER_ID not in parent_table_data:
         # If primary key does not exist in parent_table_data add the primary key and its values
         length_of_parent_table = len(parent_table_data[next(iter(parent_table_data))])
-        parent_table_data[constants.HEADER_ID] = [primary_key_value for primary_key_value in range(1, length_of_parent_table+1)]
+        parent_table_data[constants.HEADER_ID] = [primary_key_value for primary_key_value in range(1, length_of_parent_table+1)] """
 
     #print(f'parent_table_data: \n {parent_table_data}')
     #print(f'\nconnecting_table_data: \n {connecting_table_data}')
@@ -143,7 +143,7 @@ def prepare_movie_metadata_parent_table(df, host, user, password, database):
         adult boolean,
         budget bigint,
         homepage varchar(255),
-        imdb_id varchar(255),
+        imdb_id int UNIQUE,
         original_language varchar(255),
         original_title varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
         overview varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
@@ -163,7 +163,7 @@ def prepare_movie_metadata_parent_table(df, host, user, password, database):
     insert_table_query = f"""
             INSERT INTO Movie_Metadata 
             ({constants.HEADER_TMDB_ID}, title, adult, budget, homepage, imdb_id, original_language, original_title, overview, popularity, poster_path, release_date, revenue, runtime, status, tagline, video, vote_average, vote_count) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, SUBSTRING(%s, 3), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
     db_manager.create_insert_table(df, host, user, password, database, table_name, create_table_query, headers, insert_table_query)
@@ -176,7 +176,8 @@ def prepare_links_table(df, host, user, password, database):
         CREATE TABLE {table_name} (
         movie_id int PRIMARY KEY,
         imdb_id int,
-        tmdb_id int
+        tmdb_id int,
+        FOREIGN KEY (tmdb_id) REFERENCES movie_metadata(tmdb_id)
     )
     """
     
@@ -198,7 +199,8 @@ def prepare_ratings_table(df, host, user, password, database):
         movie_id int,
         rating float,
         timestamp TIMESTAMP,
-        PRIMARY KEY(user_id,movie_id)
+        PRIMARY KEY(user_id,movie_id),
+        FOREIGN KEY (movie_id) REFERENCES links(movie_id)
     )
     """
     
@@ -216,12 +218,15 @@ def prepare_parent_and_connecting_tables(df, header, host, user, password, datab
     table_column_names_list = header[1]
     data_types_list = header[2] 
     header_list = header[3]
-    
-    parent_table_data, connecting_table_data = prepare_parent_and_connecting_data(df, column_name)
+    corr_column1 = header[4]
+    corr_column2 = header[5]
+
+    parent_table_data, connecting_table_data = prepare_parent_and_connecting_data(df, column_name, corr_column1, corr_column2)
     
     
     parent_table_data = pd.DataFrame(parent_table_data)
-    parent_table_data = clean_df(parent_table_data, [constants.HEADER_ID])
+    
+    parent_table_data = clean_df(parent_table_data, [corr_column2])
     connecting_table_data = pd.DataFrame(connecting_table_data)
     
     parent_table_name = column_name

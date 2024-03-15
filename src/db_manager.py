@@ -46,8 +46,8 @@ def insert_data(cursor, df, headers, table_name, insert_table_query):
             cursor.execute(insert_table_query,  data)
         except Exception as e:
             print("Exception:", e)
-            print(f"Unable to insert :\n")
-            quit()
+            
+           
     
     print(f"Dataframe inserted into primary table - {table_name}.")
       
@@ -105,6 +105,23 @@ def create_insert_table(df, host, user, password, database, table_name, create_t
         print(f"Error while creating {table_name} in {database}.", e)
         quit()
         
+    finally:
+        if connection.is_connected():
+            connection.close()
+
+def rename_table(host, user, password, database, old_table_name, new_table_name):
+    try:
+        connection = get_db_connection(host, user, password, database)
+        if connection.is_connected():
+            cursor = connection.cursor()
+            sql = f"RENAME TABLE {old_table_name} TO {new_table_name}"
+            cursor.execute(sql)
+            connection.commit()
+            cursor.close()
+            connection.close()
+    except Error as e:
+        print("Error while renaming table in MySQL.", e)
+
     finally:
         if connection.is_connected():
             connection.close()
