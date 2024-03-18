@@ -1,3 +1,10 @@
+CREATE VIEW movie_details AS
+SELECT mm.*, mbc.belongs_to_collection_id, mg.genre_id, mk.keyword_id
+FROM movie_metadata AS mm
+JOIN movie_belongs_to_collection AS mbc ON mm.tmdb_id = mbc.tmdb_id
+JOIN movie_genres AS mg ON mm.tmdb_id = mg.tmdb_id
+JOIN movie_keywords AS mk ON mm.tmdb_id = mk.tmdb_id;
+
 CREATE TABLE Users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) DEFAULT NULL,
