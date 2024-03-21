@@ -1,10 +1,10 @@
 -- Top 5 Collaborations of Director and Actors based on count
 
-DROP PROCEDURE IF EXISTS GetDirectorCollaborations
+DROP PROCEDURE IF EXISTS display_top_collaborations;
 
 DELIMITER //
 
-CREATE PROCEDURE GetDirectorCollaborations(IN director_name VARCHAR(255))
+CREATE PROCEDURE display_top_collaborations(IN director_name VARCHAR(255))
 BEGIN
 SELECT 
     casts.name AS 'Cast Name',
@@ -30,15 +30,15 @@ END //
 
 DELIMITER ;
 
-CALL GetDirectorCollaborations('Aki Kaurismäki');
+CALL display_top_collaborations('Aki Kaurismäki');
 
--- Filter the movies by genre and language
+-- Filter the movies by genre, release year and language
 
-DROP PROCEDURE IF EXISTS GenreFilter
+DROP PROCEDURE IF EXISTS filter_movie;
 
 DELIMITER //
 
-CREATE PROCEDURE GenreFilter(IN genre_name VARCHAR(255), IN language_code VARCHAR(255), IN lim int)
+CREATE PROCEDURE filter_movie(IN genre_name VARCHAR(255), IN language_code VARCHAR(255), IN release_year YEAR, IN lim int)
 BEGIN
 SELECT 
     original_title AS 'Movie Title', release_date AS 'Release Date', overview AS 'Synopsis', runtime AS 'Runtime'
@@ -51,24 +51,50 @@ FROM
 WHERE
     genres.name = genre_name
         AND movie_metadata.original_language = language_code
+        AND YEAR(movie_metadata.release_date) = release_year
 ORDER BY popularity desc
 LIMIT lim;
 END //
 DELIMITER ;
 
-CALL GenreFilter('Action', 'ja', 5);
- 
+CALL filter_movie('Adventure', 'en', '2009', 5);
 
--- Get Cast List for a movie
-
-DROP PROCEDURE IF EXISTS GetActors;
+DROP PROCEDURE IF EXISTS CheckIfBelongstoCollection;
 
 DELIMITER //
 
-CREATE PROCEDURE GetActors(IN movie_name VARCHAR(255))
+CREATE PROCEDURE CheckIfBelongstoCollection(IN movie_name VARCHAR(255))
+BEGIN
+	DECLARE collection_name VARCHAR(255);
+
+    SELECT belongs_to_collection.name INTO collection_name
+    FROM belongs_to_collection 
+    INNER JOIN movie_belongs_to_collection  ON belongs_to_collection.belongs_to_collection_id = movie_belongs_to_collection.belongs_to_collection_id
+    join movie_metadata on movie_belongs_to_collection.tmdb_id = movie_metadata.tmdb_id
+    WHERE movie_metadata.title = movie_name;
+
+    IF collection_name IS NOT NULL THEN
+        SELECT CONCAT(movie_name, ' belongs to collection: ', collection_name) AS result;
+    ELSE
+        SELECT CONCAT(movie_name, ' does not belong to any collection') AS result;
+    END IF;
+END //
+
+DELIMITER ;
+
+CALL CheckIfBelongstoCollection('Toy Story');
+CALL CheckIfBelongstoCollection('Jumanji');
+
+-- Get Cast List for a movie
+
+DROP PROCEDURE IF EXISTS display_cast_members;
+
+DELIMITER //
+
+CREATE PROCEDURE display_cast_members(IN movie_name VARCHAR(255))
 BEGIN
 SELECT 
-    casts.name AS 'Cast Name'
+    casts.name AS 'Cast Names'
 FROM
     casts
         JOIN
@@ -81,5 +107,5 @@ ORDER BY casts.order_num;
 END //
 DELIMITER ;
 
-CALL GetActors('Jumanji');
+CALL display_cast_members('Jumanji');
 

@@ -118,6 +118,7 @@ def prepare_parent_and_connecting_data(df, column_name, corr_column1, corr_colum
     
     # Iterate over each row in the DataFrame
     for _, row in df.iterrows():
+        json_array = []
         try:
             # Load JSON data from the specified column
             json_object = ast.literal_eval(row[column_name])

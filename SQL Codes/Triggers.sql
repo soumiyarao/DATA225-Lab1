@@ -1,13 +1,15 @@
 -- Trigger to keep track of popularity score updation
 
--- CREATE TABLE popularity_log (
---     tmdb_id INT PRIMARY KEY,
---     old_popularity FLOAT,
---     new_popularity FLOAT,
---     updated_at DATETIME
--- );
+DROP TABLE IF EXISTS popularity_log;
 
-DROP TRIGGER IF EXISTS log_popularity_update
+CREATE TABLE popularity_log (
+    tmdb_id INT PRIMARY KEY,
+    old_popularity FLOAT,
+    new_popularity FLOAT,
+    updated_at DATETIME
+);
+
+DROP TRIGGER IF EXISTS log_popularity_update;
 
 DELIMITER //
 CREATE TRIGGER log_popularity_update
@@ -23,7 +25,7 @@ DELIMITER ;
 
 -- Trigger to add limit number of Genres linked to a movie
 
-DROP TRIGGER IF EXISTS CheckGenreLimit
+DROP TRIGGER IF EXISTS CheckGenreLimit;
 
 DELIMITER //
 
@@ -47,15 +49,17 @@ DELIMITER ;
 
 -- Trigger to keep track of ratings deletion
 
--- CREATE TABLE rating_deletion_audit (
---     user_id INT,
---     movie_id INT,
---     rating FLOAT,
---     deleted_at DATETIME,
---     PRIMARY KEY (user_id , movie_id)
--- );
+DROP TABLE IF EXISTS rating_deletion_audit;
 
-DROP TRIGGER IF EXISTS LinkDeletionAudit
+CREATE TABLE rating_deletion_audit (
+    user_id INT,
+    movie_id INT,
+    rating FLOAT,
+    deleted_at DATETIME,
+    PRIMARY KEY (user_id , movie_id)
+);
+
+DROP TRIGGER IF EXISTS RatingDeletionAudit;
 
 DELIMITER //
 

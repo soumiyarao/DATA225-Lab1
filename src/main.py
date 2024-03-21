@@ -1,11 +1,7 @@
 import constants
 import db_manager
 import data_processing
-import numpy as np
-    
-    
 
-    
 # main function
 def main():
     

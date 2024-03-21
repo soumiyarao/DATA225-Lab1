@@ -48,7 +48,7 @@ def insert_data(cursor, df, headers, table_name, insert_table_query):
             pass
             #print("Exception:", e)          
     
-    print(f"Dataframe inserted into primary table - {table_name}.")
+    print(f"Dataframe inserted into table - {table_name}.")
       
 def create_database(host, user, password, database):
     try:
@@ -59,7 +59,7 @@ def create_database(host, user, password, database):
             
             drop_db_query = f"DROP DATABASE IF EXISTS {database}"
             cursor.execute(drop_db_query)
-            print(f"Dropped {database} created successfully.")
+            print(f"Dropped {database} successfully.")
 
             # Create database if it does not exist
             create_db_query = f"CREATE DATABASE IF NOT EXISTS {database}"
@@ -115,6 +115,7 @@ def rename_table(host, user, password, database, old_table_name, new_table_name)
             cursor = connection.cursor()
             sql = f"RENAME TABLE {old_table_name} TO {new_table_name}"
             cursor.execute(sql)
+            print(f"Renamed table {old_table_name} to {new_table_name}.")
             connection.commit()
             cursor.close()
             connection.close()
