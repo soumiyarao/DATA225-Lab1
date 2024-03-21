@@ -25,3 +25,11 @@ CREATE TABLE ViewHistory (
     user_id INT,
     FOREIGN KEY (user_id) REFERENCES Users(user_id) on delete cascade
 );
+
+
+CREATE VIEW movie_details AS
+SELECT mm.*, mbc.belongs_to_collection_id, mg.genre_id, mk.keyword_id
+FROM movie_metadata AS mm
+JOIN movie_belongs_to_collection AS mbc ON mm.tmdb_id = mbc.tmdb_id
+JOIN movie_genres AS mg ON mm.tmdb_id = mg.tmdb_id
+JOIN movie_keywords AS mk ON mm.tmdb_id = mk.tmdb_id;
