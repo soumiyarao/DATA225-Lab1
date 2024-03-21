@@ -6,6 +6,8 @@ CREATE TABLE Users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+ALTER TABLE ratings ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES Users(USER_ID);
+
 insert into Users(User_id) select distinct user_id from ratings;
 
 CREATE TABLE SearchHistory (
