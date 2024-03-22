@@ -1,4 +1,4 @@
-DATA_SET_PATH = 'res'
+DATA_SET_PATH = 'Data_Processing/Soumiya_Thada/res'
 DATA_SET_EXTENSION = 'csv'
 MOVIES_METADATA = 'Movies_Metadata'
 KEYWORDS = 'keywords'
