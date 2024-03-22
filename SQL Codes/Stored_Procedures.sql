@@ -3,7 +3,6 @@
 DROP PROCEDURE IF EXISTS display_top_collaborations;
 
 DELIMITER //
-
 CREATE PROCEDURE display_top_collaborations(IN director_name VARCHAR(255))
 BEGIN
 SELECT 
@@ -59,11 +58,13 @@ DELIMITER ;
 
 CALL filter_movie('Adventure', 'en', '2009', 5);
 
-DROP PROCEDURE IF EXISTS CheckIfBelongstoCollection;
+-- Check if a movie belongs to any collection
+
+DROP PROCEDURE IF EXISTS check_if_belongs_to_collection;
 
 DELIMITER //
 
-CREATE PROCEDURE CheckIfBelongstoCollection(IN movie_name VARCHAR(255))
+CREATE PROCEDURE check_if_belongs_to_collection(IN movie_name VARCHAR(255))
 BEGIN
 	DECLARE collection_name VARCHAR(255);
 
@@ -82,8 +83,8 @@ END //
 
 DELIMITER ;
 
-CALL CheckIfBelongstoCollection('Toy Story');
-CALL CheckIfBelongstoCollection('Jumanji');
+CALL check_if_belongs_to_collection('Toy Story');
+CALL check_if_belongs_to_collection('Jumanji');
 
 -- Get Cast List for a movie
 

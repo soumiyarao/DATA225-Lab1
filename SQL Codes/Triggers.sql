@@ -25,11 +25,11 @@ DELIMITER ;
 
 -- Trigger to add limit number of Genres linked to a movie
 
-DROP TRIGGER IF EXISTS CheckGenreLimit;
+DROP TRIGGER IF EXISTS check_genre_limit;
 
 DELIMITER //
 
-CREATE TRIGGER CheckGenreLimit
+CREATE TRIGGER check_genre_limit
 BEFORE INSERT ON movie_genres
 FOR EACH ROW
 BEGIN
@@ -59,11 +59,11 @@ CREATE TABLE rating_deletion_audit (
     PRIMARY KEY (user_id , movie_id)
 );
 
-DROP TRIGGER IF EXISTS RatingDeletionAudit;
+DROP TRIGGER IF EXISTS rating_deletion_audit;
 
 DELIMITER //
 
-CREATE TRIGGER RatingDeletionAudit
+CREATE TRIGGER rating_deletion_audit
 AFTER DELETE ON ratings
 FOR EACH ROW
 BEGIN
@@ -72,3 +72,22 @@ BEGIN
 END //
 
 DELIMITER ;
+
+
+
+-- Queries to Validate Triggers
+
+-- SELECT tmdb_id, title, popularity from movie_metadata WHERE tmdb_id = 11;
+-- UPDATE movie_metadata SET popularity = 45 WHERE tmdb_id = 11;
+-- SELECT * FROM popularity_log;
+
+
+-- SELECT tmdb_id, count(*) FROM movie_genres WHERE tmdb_id = 11052
+-- GROUP BY tmdb_id  ORDER BY count(*) DESC;
+-- INSERT INTO movie_genres (tmdb_id, genres_id) VALUES (11052,'10402');
+-- INSERT INTO movie_genres (tmdb_id, genres_id) VALUES (11052,'10749');
+-- INSERT INTO movie_genres (tmdb_id, genres_id) VALUES (11052,'10769');
+
+
+-- DELETE FROM ratings WHERE user_id = 1 AND movie_id = 31;
+-- SELECT * FROM rating_deletion_audit;

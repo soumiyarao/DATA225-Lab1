@@ -67,7 +67,7 @@ SELECT
 FROM
     movie_metadata
 ORDER BY weighted_rating DESC
-LIMIT 10;
+LIMIT 5;
 
 
 
