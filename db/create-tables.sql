@@ -42,13 +42,13 @@ GRANT SELECT ON tmdb.movie_details TO 'viewro'@'%';
 
 FLUSH PRIVILEGES;
 -- ----
-CREATE USER 'user'@'%' IDENTIFIED BY 'tmdb';
+CREATE USER 'ltdrw'@'%' IDENTIFIED BY 'tmdb';
 
-GRANT SELECT ON tmdb.* TO 'user'@'%';
+GRANT SELECT ON tmdb.* TO 'ltdrw'@'%';
 
-GRANT INSERT, UPDATE, DELETE ON tmdb.ratings TO 'user'@'%';
-GRANT INSERT, UPDATE, DELETE ON tmdb.Users TO 'user'@'%';
-GRANT INSERT, UPDATE, DELETE ON tmdb.ViewHistory TO 'user'@'%';
-GRANT INSERT, UPDATE, DELETE ON tmdb.SearchHistory TO 'user'@'%';
+GRANT INSERT, UPDATE, DELETE ON tmdb.ratings TO 'ltdrw'@'%';
+GRANT INSERT, UPDATE, DELETE ON tmdb.Users TO 'ltdrw'@'%';
+GRANT INSERT, UPDATE, DELETE ON tmdb.ViewHistory TO 'ltdrw'@'%';
+GRANT INSERT, UPDATE, DELETE ON tmdb.SearchHistory TO 'ltdrw'@'%';
 
 FLUSH PRIVILEGES;
