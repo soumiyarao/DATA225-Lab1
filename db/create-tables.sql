@@ -33,3 +33,22 @@ FROM movie_metadata AS mm
 JOIN movie_belongs_to_collection AS mbc ON mm.tmdb_id = mbc.tmdb_id
 JOIN movie_genres AS mg ON mm.tmdb_id = mg.tmdb_id
 JOIN movie_keywords AS mk ON mm.tmdb_id = mk.tmdb_id;
+
+
+
+CREATE USER 'viewro'@'%' IDENTIFIED BY 'tmdb';
+
+GRANT SELECT ON tmdb.movie_details TO 'viewro'@'%';
+
+FLUSH PRIVILEGES;
+-- ----
+CREATE USER 'user'@'%' IDENTIFIED BY 'tmdb';
+
+GRANT SELECT ON tmdb.* TO 'user'@'%';
+
+GRANT INSERT, UPDATE, DELETE ON tmdb.ratings TO 'user'@'%';
+GRANT INSERT, UPDATE, DELETE ON tmdb.Users TO 'user'@'%';
+GRANT INSERT, UPDATE, DELETE ON tmdb.ViewHistory TO 'user'@'%';
+GRANT INSERT, UPDATE, DELETE ON tmdb.SearchHistory TO 'user'@'%';
+
+FLUSH PRIVILEGES;
