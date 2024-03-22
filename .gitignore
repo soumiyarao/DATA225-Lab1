@@ -1,2 +1,4 @@
 *.DS_Store
 *.csv
+*/__pycache__/
+Data_Processing/Soumiya_Thada/src/__pycache__/
