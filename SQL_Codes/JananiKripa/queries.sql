@@ -1,11 +1,15 @@
--- Count the number of movies produced by each production company:
-select pc.name as production_company, COUNT(*) as movie_count from Movie_metadata m join Movie_Production_Companies mpc on m.tmdb_id = mpc.tmdb_id join Production_Companies pc 
-on mpc.production_companies_id = pc.production_companies_id group by pc.name;
+call LogSearchHistory("Action", 1);
+call LogSearchHistory("Ariel", 2);
+call LogSearchHistory("Mickey", 3);
+call LogViewHistory(2,2);
 
+-- Introduce new collections
+INSERT INTO belongs_to_collection (belongs_to_collection_id, name, poster_path, backdrop_path) VALUES
+(1, 'Action Collection', '/poster.jpg', '/backdrop.jpg'),
+(2, 'Romance Collection', '/poster.jpg', '/backdrop.jpg');
 
--- Retrieve movies with their associated production companies:
-select m.title, pc.name as production_company from Movie_metadata m join Movie_Production_Companies mpc 
-on m.tmdb_id = mpc.tmdb_id join Production_Companies pc on mpc.production_companies_id = pc.production_companies_id
+-- Update movie status after release
+UPDATE movie_metadata SET status = 'Released' WHERE tmdb_id = 12345;
 
 -- Retrieve all search history records for a specific user:
 select * from SearchHistory where user_id = 123; -- Replace 123 with the actual user ID
