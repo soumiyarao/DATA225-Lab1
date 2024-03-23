@@ -18,3 +18,6 @@
    
 5. Run from inside the TMDB directory
    java -cp dependencies/json.jar:dependencies/mysql-connector-java.jar:tmdb.jar Populate
+
+
+Source : https://github.com/mkripa/data225-lab1
